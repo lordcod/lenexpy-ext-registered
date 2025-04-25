@@ -1,0 +1,89 @@
+{
+    "points": {
+        "enabled": true,
+        "min": 1.0,
+        "max": 1500.0
+    },
+    "licenses": [
+        "мс",
+        "кмс",
+        "I",
+        "II",
+        "III",
+        "Iюн",
+        "IIюн",
+        "IIIюн"
+    ],
+    "styles": {
+        "FREE": "Вольный стиль",
+        "BACK": "На спине",
+        "BREAST": "Брасс",
+        "FLY": "Баттерфляй",
+        "MEDLEY": "Комплекс"
+    },
+    "reversed_styles": {
+        "вольный стиль": "FREE",
+        "на спине": "BACK",
+        "брасс": "BREAST",
+        "баттерфляй": "FLY",
+        "комплекс": "MEDLEY",
+        "комплексное плавание": "MEDLEY"
+    },
+    "location": {
+        "lastname": 0,
+        "firstname": 1,
+        "middlename": 2,
+        "birthday": 3,
+        "gender": 4,
+        "club": 7,
+        "license": 8,
+        "stroke": 9,
+        "distance": 10,
+        "entrytime": 12,
+        "lane": -1,
+        "heat": -1
+    },
+    "replacement": {
+        ".": "",
+        " ": "",
+        "взрослый": "",
+        "разряд": "",
+        "взр": "",
+        "вз": "",
+        "|": "I",
+        "МС": "мс",
+        "КМС": "кмс",
+        "юношеский": "юн",
+        "1": "I",
+        "2": "II",
+        "3": "III",
+        "спортивный": "",
+        "-ой": "",
+        "-в": "",
+        "-": ""
+    },
+    "auto_location": {
+        "Фамилия": "lastname",
+        "Имя": "firstname",
+        "Отчество": "middlename",
+        "Пол": "gender",
+        "р": "license",
+        "Год рождения": "birthday",
+        "Клуб": "club",
+        "Стиль плавания": "stroke",
+        "Дисциплина": "stroke",
+        "Дистанция": "distance",
+        "Заявочное время": "entrytime",
+        "Заявочный результат": "entrytime",
+        "Разряд": "license",
+        "Дата рождения": "birthday",
+        "Город": "club",
+        "Заплыв": "heat",
+        "Дорожка": "lane"
+    },
+    "birthday": "%d.%m.%Y",
+    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/Member Export 12_35_41 22.04.2025.xlsx",
+    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/20250427_М_Splash.lxf",
+    "debug": false,
+    "exh": true
+}
