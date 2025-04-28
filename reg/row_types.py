@@ -1,7 +1,7 @@
-from ast import Return
 import contextlib
 from datetime import time
 import re
+from sysconfig import parse_config_h
 from typing import Callable, Optional
 from loguru import logger
 
@@ -28,7 +28,7 @@ def parse_entrytime(et: str, index: int):
     if not et or et.lower() == 'nt':
         return time()
     match = re.fullmatch(
-        r'((?P<hour>\d{2}):)?(?P<min>\d{2}):(?P<sec>\d{2})[:.](?P<hsec>\d{2})', et)
+        r'((?P<hour>\d{2}):)?(?P<min>\d{2}):(?P<sec>\d{2})[:.,](?P<hsec>\d{2})', et)
     if not match:
         logger.warning(
             f'[{index}]: Игнорирование времени из-за сбоя обработки ({et})')
@@ -44,6 +44,49 @@ def parse_entrytime(et: str, index: int):
         logger.warning(
             f'[{index}]: Игнорирование времени из-за сбоя обработки ({err};{et})')
         return time()
+
+
+def validate_name_event(name):
+    if not isinstance(name, str):
+        raise ValueError('Type is not str')
+    match = re.fullmatch(r'(\d+)(.+)', name)
+    distance, code = match.groups()
+    return int(distance), code
+
+
+def parse_events(item: str, index: int):
+    splits = item.split()
+    events = []
+    i = 0
+    while i < len(splits):
+        try:
+            name, entrytime = splits[i], splits[i+1]
+        except IndexError:
+            name, entrytime = splits[i], time()
+        distance, code = validate_name_event(name)
+
+        try:
+            validate_name_event(entrytime)
+        except Exception:
+            if isinstance(entrytime, str):
+                entrytime = entrytime.strip('()')
+            entrytime = parse_entrytime(entrytime, index)
+            i += 2
+        else:
+            entrytime = time()
+            i += 1
+
+        events.append((distance, code, entrytime))
+    return events
+
+
+def parse_splits(i):
+    def wrap(item: str):
+        try:
+            return item.split()[i]
+        except IndexError:
+            return
+    return wrap
 
 
 class RowValidate:
@@ -80,22 +123,16 @@ class RowValidate:
 
 
 class Row:
-    lastname: str = RowValidate('lastname')
-    firstname: str = RowValidate('firstname')
-    gender: str = RowValidate('gender')
+    lastname: str = RowValidate('lastname', parse_splits(0))
+    firstname: str = RowValidate('firstname', parse_splits(1))
+    middlename: Optional[str] = RowValidate(
+        'middlename', parse_splits(2))
+    gender: str = RowValidate('gender', parse_splits(1))
     license: Optional[str] = RowValidate(
         'license', lambda item: item or None, True)
-    birthday: str = RowValidate('birthday')
+    birthday: str = RowValidate('birthday', parse_splits(0))
     club: str = RowValidate('club')
-    stroke: str = RowValidate('stroke')
-    distance: int = RowValidate('distance', int)
-    entrytime: time = RowValidate('entrytime', parse_entrytime, True)
-    middlename: Optional[str] = RowValidate(
-        'middlename', lambda item: item or None, True)
-    lane: Optional[int] = RowValidate(
-        'lane', lambda item: int(item) if item else None, True)
-    heat: Optional[int] = RowValidate(
-        'heat', lambda item: int(item) if item else None, True)
+    event: list = RowValidate('event', parse_events)
 
     parsers = {
         str: lambda _, v: v
@@ -128,3 +165,26 @@ class Row:
                 continue
             values.append(f'{name}={repr(getattr(self, name))}')
         return f"<Row {' '.join(values)}>"
+
+
+if __name__ == '__main__':
+    config = {
+        "lastname": 0,
+        "firstname": 1,
+        "middlename": 2,
+        "birthday": 5,
+        "gender": 3,
+        "club": 8,
+        "license": 4,
+        "stroke": 9,
+        "distance": 10,
+        "entrytime": 12,
+        "lane": -1,
+        "heat": -1
+    }
+    values = {}
+    for name, item in Row.__dict__.items():
+        if not isinstance(item, RowValidate):
+            continue
+        values[name] = config.get(name, -1)
+    print(values)

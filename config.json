@@ -15,33 +15,26 @@
         "IIIюн"
     ],
     "styles": {
-        "FREE": "Вольный стиль",
-        "BACK": "На спине",
-        "BREAST": "Брасс",
-        "FLY": "Баттерфляй",
-        "MEDLEY": "Комплекс"
-    },
-    "reversed_styles": {
         "вольный стиль": "FREE",
         "на спине": "BACK",
         "брасс": "BREAST",
         "баттерфляй": "FLY",
         "комплекс": "MEDLEY",
-        "комплексное плавание": "MEDLEY"
+        "комплексное плавание": "MEDLEY",
+        "кл": "BIFINS",
+        "вл": "SURFACE",
+        "п/п": "IMMERSION"
     },
     "location": {
-        "lastname": 0,
-        "firstname": 1,
+        "lastname": 2,
+        "firstname": 2,
         "middlename": 2,
-        "birthday": 5,
         "gender": 3,
-        "club": 8,
-        "license": 4,
-        "stroke": 9,
-        "distance": 10,
-        "entrytime": 12,
-        "lane": -1,
-        "heat": -1
+        "license": 5,
+        "birthday": 3,
+        "club": 1,
+        "event": 7,
+        "stroke": 7
     },
     "replacement": {
         ".": "",
@@ -82,8 +75,8 @@
         "Дорожка": "lane"
     },
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/Копия Заявка общая на 27.04.2025.xlsx",
-    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/Кубок SPN 2025 - текущая.lxf",
+    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/export.xlsx",
+    "lxf": "C:/Users/2008d/OneDrive/Документы/lenex.lxf",
     "debug": false,
     "exh": true
 }

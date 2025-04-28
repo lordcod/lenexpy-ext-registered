@@ -22,6 +22,8 @@ class AthleteParser:
         'женщины': 'F',
         'девочки': 'F',
         'мальчики': 'M',
+        'юноши': 'M',
+        'девушки': 'F',
     }
 
     def parse_bd(format: str, dt: str | datetime) -> date:

@@ -42,7 +42,7 @@ def get_swimstyles(lenex: Lenex):
     for session in lenex.meet.sessions:
         for event in session.events:
             key = (event.gender,
-                   event.swimstyle.stroke,
+                   event.swimstyle.code or event.swimstyle.stroke,
                    event.swimstyle.distance)
             events.setdefault(key, [])
             events[key].append((
@@ -88,49 +88,33 @@ class RowParser:
     def parse(self):
         self.athlete = self.basedata.get(self.row)
 
-        self.stroke = self.config['reversed_styles'][self.row.stroke.strip(
-        ).lower()]
-        event, status = self.find_event()
+        for (distance, code, entrytime) in self.row.event:
+            code = self.config['styles'].get(
+                code, code).format(distance=distance)
+            event, status = self.find_event(distance, code)
 
-        self.entrytime = self.validate_entrytime()
+            entry = Entry(
+                event.eventid,
+                entrytime,
+                status=status
+            )
+            self.athlete.entries.append(entry)
 
-        if self.row.heat and self.row.lane:
-            key = (event, self.athlete.gender, self.row.heat)
-            if not (heatid := heats.get(key)):
-                heatid = random.randint(1000, 10_000)
-                heats[key] = heatid
-                heat = Heat(heatid=heatid, number=self.row.heat,
-                            order=self.row.heat, status="SEEDED")
-                if not event.heats:
-                    event.heats = []
-                event.heats.append(heat)
-        else:
-            heatid = None
+    def find_event(self, distance: int, stroke: str) -> Tuple[Event, Optional[str]]:
+        key = (self.athlete.gender,
+               stroke,
+               distance)
+        info = (self.athlete.gender,
+                stroke,
+                str(distance))
 
-        entry = Entry(
-            event.eventid,
-            self.entrytime,
-            status=status
-        )
-        if heatid and self.row.lane:
-            entry.heatid = heatid
-            entry.lane = self.row.lane
-
-        self.athlete.entries.append(entry)
-
-    def find_event(self) -> Tuple[Event, Optional[str]]:
         try:
-            events = self.events[(self.athlete.gender,
-                                  self.stroke, self.row.distance)]
+            events = self.events[key]
         except KeyError:
-            raise IncorrectDistance(', '.join((self.athlete.gender,
-                                               self.stroke,
-                                               str(self.row.distance))))
+            raise IncorrectDistance(', '.join(info))
 
         if len(events) == 0:
-            raise IncorrectDistance(', '.join((self.athlete.gender,
-                                               self.stroke,
-                                               str(self.row.distance))))
+            raise IncorrectDistance(', '.join(info))
 
         for (min, max), e in events:
             if check_age(get_age(self.athlete), min, max):
@@ -149,7 +133,7 @@ class RowParser:
             f'[{self.i}]: {self.athlete.firstname} {self.athlete.lastname} {get_age(self.athlete)}, участвует в забеге со статусом EXH, потому что он не подходит для возраста ({event[0][0]}-{event[0][1]})')
         return event[1], 'EXH'
 
-    def validate_entrytime(self):
+    def validate_entrytime(self, distance: int, stroke: str, entrytime: str):
         if self.row.entrytime.isoformat() == '00:00:00':
             return self.row.entrytime
         if not self.config['points']['enabled']:
@@ -158,12 +142,12 @@ class RowParser:
         point = bt.get_point(
             self.lenex.meet.course,
             self.athlete.gender,
-            self.row.distance,
-            self.stroke,
-            get_only_time(self.row.entrytime)
+            distance,
+            stroke,
+            get_only_time(entrytime)
         )
         if self.config['points']['max'] > point > self.config['points']['min']:
-            return self.row.entrytime
+            return entrytime
         logger.warning(
             f'[{self.i}]: Нарушение политики очков ({point:.5f};{self.row.entrytime})')
         return time()
