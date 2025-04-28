@@ -33,10 +33,10 @@
         "lastname": 0,
         "firstname": 1,
         "middlename": 2,
-        "birthday": 3,
-        "gender": 4,
-        "club": 7,
-        "license": 8,
+        "birthday": 5,
+        "gender": 3,
+        "club": 8,
+        "license": 4,
         "stroke": 9,
         "distance": 10,
         "entrytime": 12,
@@ -82,8 +82,8 @@
         "Дорожка": "lane"
     },
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/Member Export 12_35_41 22.04.2025.xlsx",
-    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/20250427_М_Splash.lxf",
+    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/Копия Заявка общая на 27.04.2025.xlsx",
+    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/Кубок SPN 2025 - текущая.lxf",
     "debug": false,
     "exh": true
 }

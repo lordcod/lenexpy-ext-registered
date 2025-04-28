@@ -21,6 +21,8 @@ def sint(val):
 def parse_entrytime(et: str, index: int):
     if et is MISSING:
         return time()
+    if isinstance(et, time):
+        return et
 
     et = et.strip()
     if not et or et.lower() == 'nt':
