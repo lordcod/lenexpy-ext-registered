@@ -34,7 +34,7 @@
         "birthday": 3,
         "club": 1,
         "event": 7,
-        "stroke": 7
+        "coachname": 9
     },
     "replacement": {
         ".": "",
@@ -55,28 +55,10 @@
         "-в": "",
         "-": ""
     },
-    "auto_location": {
-        "Фамилия": "lastname",
-        "Имя": "firstname",
-        "Отчество": "middlename",
-        "Пол": "gender",
-        "р": "license",
-        "Год рождения": "birthday",
-        "Клуб": "club",
-        "Стиль плавания": "stroke",
-        "Дисциплина": "stroke",
-        "Дистанция": "distance",
-        "Заявочное время": "entrytime",
-        "Заявочный результат": "entrytime",
-        "Разряд": "license",
-        "Дата рождения": "birthday",
-        "Город": "club",
-        "Заплыв": "heat",
-        "Дорожка": "lane"
-    },
+    "auto_location": {},
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/export.xlsx",
-    "lxf": "C:/Users/2008d/OneDrive/Документы/lenex.lxf",
+    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/export (3).xlsx",
+    "lxf": "C:/Users/2008d/OneDrive/Документы/Соревнования/Базовая подводка/lenex.lxf",
     "debug": false,
     "exh": true
 }

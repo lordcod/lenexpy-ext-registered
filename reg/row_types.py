@@ -1,7 +1,6 @@
 import contextlib
 from datetime import time
 import re
-from sysconfig import parse_config_h
 from typing import Callable, Optional
 from loguru import logger
 
@@ -28,7 +27,7 @@ def parse_entrytime(et: str, index: int):
     if not et or et.lower() == 'nt':
         return time()
     match = re.fullmatch(
-        r'((?P<hour>\d{2}):)?(?P<min>\d{2}):(?P<sec>\d{2})[:.,](?P<hsec>\d{2})', et)
+        r'((?P<hour>\d{1,2}):)?(?P<min>\d{2}):(?P<sec>\d{1,2})[:.,](?P<hsec>\d{2})', et)
     if not match:
         logger.warning(
             f'[{index}]: Игнорирование времени из-за сбоя обработки ({et})')
@@ -122,6 +121,20 @@ class RowValidate:
             row.n = config[row.name]
 
 
+def parse_coachname(value: str):
+    if not value:
+        return []
+
+    def filter_func(i):
+        return i.strip() not in ('...', '')
+
+    return list(set(
+        map(str.strip,
+            filter(filter_func,
+                   value.split('  ')))
+    ))
+
+
 class Row:
     lastname: str = RowValidate('lastname', parse_splits(0))
     firstname: str = RowValidate('firstname', parse_splits(1))
@@ -133,6 +146,7 @@ class Row:
     birthday: str = RowValidate('birthday', parse_splits(0))
     club: str = RowValidate('club')
     event: list = RowValidate('event', parse_events)
+    coachname: list[str] = RowValidate('coachname', parse_coachname)
 
     parsers = {
         str: lambda _, v: v

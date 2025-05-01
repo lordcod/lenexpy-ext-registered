@@ -24,6 +24,8 @@ class AthleteParser:
         'мальчики': 'M',
         'юноши': 'M',
         'девушки': 'F',
+        'юниорки': 'F',
+        'юниоры': 'M',
     }
 
     def parse_bd(format: str, dt: str | datetime) -> date:
@@ -83,7 +85,8 @@ class BaseData:
                 gender=AthleteParser.parse_gender(row.gender),
                 firstname=row.firstname,
                 lastname=row.lastname,
-                license=AthleteParser.get_license(self.config, row.license)
+                license=AthleteParser.get_license(self.config, row.license),
+                domicile=', '.join(row.coachname)
             )
             club.athletes.append(athlete)
             self.athletes[key] = athlete

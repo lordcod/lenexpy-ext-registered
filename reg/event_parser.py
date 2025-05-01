@@ -1,5 +1,4 @@
 from datetime import date, time
-import random
 from typing import List, Optional, Tuple
 from loguru import logger
 from reg.athlete_parser import BaseData
@@ -10,7 +9,6 @@ from lenexpy.models.agegroup import AgeGroup
 from lenexpy.models.event import Event
 from lenexpy.models.athelete import Athlete
 from lenexpy.models.entry import Entry
-from lenexpy.models.heat import Heat
 from lenexpy.ext.basetime import BaseTime
 
 bt = BaseTime('FINA_Points_Table_Base_Times.xlsx')

@@ -43,7 +43,8 @@ class TranslatorLenex:
 
             try:
                 row = Row._init_row(sheet, values,  i)
-                RowParser(row, i, lenex, self.config, self.basedata).parse()
+                RowParser(row, i, lenex, self.config,
+                          self.basedata).parse()
             except Exception as exc:
                 logger.exception(
                     f"Строка {i} пропущена из-за ошибки: [{type(exc).__name__}] {exc}")
