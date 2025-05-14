@@ -1,6 +1,6 @@
 from ast import Return
 import contextlib
-from datetime import time
+from datetime import time, timedelta
 import re
 from typing import Callable, Optional
 from loguru import logger
@@ -21,8 +21,20 @@ def sint(val):
 def parse_entrytime(et: str, index: int):
     if et is MISSING:
         return time()
+    if isinstance(et, timedelta):
+        total_seconds = et.total_seconds()
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        print(hours, minutes)
+        return time(00, int(hours), int(minutes),  int(seconds))
     if isinstance(et, time):
-        return et
+        return time(
+            0,
+            et.hour,
+            et.minute,
+            et.microsecond
+        )
 
     et = et.strip()
     if not et or et.lower() == 'nt':
@@ -34,11 +46,12 @@ def parse_entrytime(et: str, index: int):
             f'[{index}]: Игнорирование времени из-за сбоя обработки ({et})')
         return time()
     try:
+        print(match.groupdict())
         return time(
-            sint(match.group('hour')),
             sint(match.group('min')),
             sint(match.group('sec')),
-            sint(match.group('hsec'))*10_000
+            sint(match.group('hsec')),
+            0
         )
     except Exception as err:
         logger.warning(
@@ -96,6 +109,7 @@ class Row:
         'lane', lambda item: int(item) if item else None, True)
     heat: Optional[int] = RowValidate(
         'heat', lambda item: int(item) if item else None, True)
+    start_type: str = RowValidate('start_type')
 
     parsers = {
         str: lambda _, v: v

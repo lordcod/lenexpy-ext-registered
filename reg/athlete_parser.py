@@ -4,10 +4,19 @@ import re
 from typing import TypeVar
 from lenexpy.models.athelete import Athlete
 from lenexpy.models.club import Club
+from lenexpy.models.handicap import Handicap, HandicapClass
 from reg.exceptions import IncorrectGender
 from reg.row_types import Row
 
 T = TypeVar('T')
+handicaps = {
+    'оздоровительное': HandicapClass.C11,
+    'спортивное': HandicapClass.C12,
+    'особенное': HandicapClass.C13,
+    'особенные': HandicapClass.C13,
+    'мастерс': HandicapClass.C12,
+    'начинающие': HandicapClass.C11
+}
 
 
 def randid() -> int:
@@ -56,6 +65,12 @@ class AthleteParser:
         if license in config['licenses']:
             return license
 
+    def get_handicap(hand_type: str):
+        if not hand_type:
+            return None
+        hand_type = hand_type.lower()
+        return handicaps[hand_type]
+
 
 class BaseData:
     clubs: dict[str, Club]
@@ -74,6 +89,7 @@ class BaseData:
                             row.gender, row.birthday)
 
         if key not in self.athletes:
+            hand = AthleteParser.get_handicap(row.start_type)
             athlete = Athlete(
                 randid(),
                 birthdate=AthleteParser.parse_bd(
@@ -81,7 +97,12 @@ class BaseData:
                 gender=AthleteParser.parse_gender(row.gender),
                 firstname=row.firstname,
                 lastname=row.lastname,
-                license=AthleteParser.get_license(self.config, row.license)
+                license=AthleteParser.get_license(self.config, row.license),
+                handicap=Handicap(
+                    breast=hand,
+                    free=hand,
+                    medley=hand
+                )
             )
             club.athletes.append(athlete)
             self.athletes[key] = athlete

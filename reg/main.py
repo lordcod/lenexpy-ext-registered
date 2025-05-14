@@ -35,7 +35,7 @@ class TranslatorLenex:
         RowValidate._init_config(self.config['location'])
         for i, r in enumerate(sheet.iter_rows(min_row=2), start=1):
             values = [v.value for v in r]
-            if values[0] is None:
+            if values[1] is None:
                 continue
 
             if self.config.get('debug'):
