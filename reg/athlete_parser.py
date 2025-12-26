@@ -30,6 +30,7 @@ class AthleteParser:
         'мужчины': 'M',
         'женщины': 'F',
         'девочки': 'F',
+        'девушки': 'F',
         'мальчики': 'M',
     }
 
@@ -97,6 +98,7 @@ class BaseData:
                 gender=AthleteParser.parse_gender(row.gender),
                 firstname=row.firstname,
                 lastname=row.lastname,
+                nameprefix=row.middlename,
                 license=AthleteParser.get_license(self.config, row.license),
                 handicap=Handicap(
                     breast=hand,

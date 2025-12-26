@@ -2,3 +2,4 @@
 .user/
 *.spec
 __pycache__
+temp/

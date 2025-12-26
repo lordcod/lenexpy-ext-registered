@@ -1,6 +1,7 @@
 from ast import Return
 import contextlib
 from datetime import time, timedelta
+import math
 import re
 from typing import Callable, Optional
 from loguru import logger
@@ -21,12 +22,21 @@ def sint(val):
 def parse_entrytime(et: str, index: int):
     if et is MISSING:
         return time()
+    if isinstance(et, float):
+        if math.isnan(et) or et <= 0:
+            return time()
+        minutes = int(et // 60)
+        seconds = int(et % 60)
+        microseconds = round((et - int(et)) * 1_000_000)
+
+        print(et)
+        print(time(0, minutes, seconds, microseconds))
+        return time(0, minutes, seconds, microseconds)
     if isinstance(et, timedelta):
         total_seconds = et.total_seconds()
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
-        print(hours, minutes)
         return time(00, int(hours), int(minutes),  int(seconds))
     if isinstance(et, time):
         return time(
@@ -39,19 +49,19 @@ def parse_entrytime(et: str, index: int):
     et = et.strip()
     if not et or et.lower() == 'nt':
         return time()
+    # ((?P<hour>\d{2}):)?
     match = re.fullmatch(
-        r'((?P<hour>\d{2}):)?(?P<min>\d{2}):(?P<sec>\d{2})[:.](?P<hsec>\d{2})', et)
+        r'((?P<min>\d{1,2})[:\.,])?(?P<sec>\d{1,2})[:\.,](?P<hsec>\d{1,2})', et)
     if not match:
         logger.warning(
             f'[{index}]: Игнорирование времени из-за сбоя обработки ({et})')
         return time()
     try:
-        print(match.groupdict())
         return time(
+            0,
             sint(match.group('min')),
             sint(match.group('sec')),
-            sint(match.group('hsec')),
-            0
+            sint(match.group('hsec'))*10_000
         )
     except Exception as err:
         logger.warning(
