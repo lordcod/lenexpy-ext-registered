@@ -31,16 +31,16 @@
         "комплексное плавание": "MEDLEY"
     },
     "location": {
-        "lastname": 1,
-        "firstname": 2,
-        "middlename": 3,
-        "birthday": 4,
-        "gender": 11,
-        "club": 12,
-        "license": 6,
-        "stroke": 10,
-        "distance": 9,
-        "entrytime": 7,
+        "lastname": 0,
+        "firstname": 1,
+        "middlename": 2,
+        "birthday": 3,
+        "gender": 4,
+        "club": 7,
+        "license": 8,
+        "stroke": 9,
+        "distance": 10,
+        "entrytime": 12,
         "start_type": -1,
         "lane": -1,
         "heat": -1
@@ -84,8 +84,8 @@
         "Дорожка": "lane"
     },
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/OneDrive/Документы/Результаты.xlsx",
-    "lxf": "C:/Users/2008d/OneDrive/Документы/lenex.lxf",
+    "xlsx": "C:/Users/2008d/OneDrive/Документы/Соревнования/170126 Мытищи/Member Export 17_55_16 14.01.2026.xlsx",
+    "lxf": "C:/Users/2008d/OneDrive/Документы/Соревнования/170126 Мытищи/20260117.lxf",
     "debug": false,
     "exh": true
 }

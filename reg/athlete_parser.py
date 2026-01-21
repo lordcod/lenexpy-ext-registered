@@ -15,7 +15,7 @@ handicaps = {
     'особенное': HandicapClass.C13,
     'особенные': HandicapClass.C13,
     'мастерс': HandicapClass.C12,
-    'начинающие': HandicapClass.C11
+    'начинающие': HandicapClass.C11,
 }
 
 
@@ -70,7 +70,7 @@ class AthleteParser:
         if not hand_type:
             return None
         hand_type = hand_type.lower()
-        return handicaps[hand_type]
+        return handicaps.get(hand_type, hand_type.strip('sS'))
 
 
 class BaseData:
