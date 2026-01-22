@@ -4,7 +4,8 @@ from typing import List, Optional, Tuple
 from loguru import logger
 from reg.athlete_parser import BaseData
 from reg.exceptions import IncorrectAge, IncorrectDistance
-from reg.row_types import Row
+from reg.issues import IssueCollector
+from reg.row_types import Row, RowValidate
 from lenexpy.models.lenex import Lenex
 from lenexpy.models.agegroup import AgeGroup
 from lenexpy.models.event import Event
@@ -78,7 +79,8 @@ class RowParser:
         i: int,
         lenex: Lenex,
         config: dict,
-        basedata: BaseData
+        basedata: BaseData,
+        collector: IssueCollector | None = None
     ):
         self.row = row
         self.i = i
@@ -86,6 +88,30 @@ class RowParser:
         self.config = config
         self.basedata = basedata
         self.events = get_swimstyles(lenex)
+        self.collector = collector
+
+    def _serialize_row(self):
+        """Return plain dict of row fields for UI-friendly formatting."""
+        data = {}
+        for name, item in type(self.row).__dict__.items():
+            if not isinstance(item, RowValidate):
+                continue
+            value = getattr(self.row, name, None)
+            data[name] = value
+        return data
+
+    def _add_issue(self, category: str, message: str, *, level: str = "warning", extra: dict | None = None):
+        if self.collector is None:
+            return
+        self.collector.add(
+            category=category,
+            message=message,
+            level=level,
+            row_index=self.i,
+            row_repr=repr(self.row),
+            row_data=self._serialize_row(),
+            extra=extra or {},
+        )
 
     def parse(self):
         self.athlete = self.basedata.get(self.row)
@@ -129,22 +155,23 @@ class RowParser:
             events = self.events[(self.athlete.gender,
                                   self.stroke, self.row.distance)]
         except KeyError:
-            raise IncorrectDistance(', '.join((self.athlete.gender,
-                                               self.stroke,
-                                               str(self.row.distance))))
+            message = f"No distances found by parameters {self.athlete.gender}, {self.stroke}, {self.row.distance}"
+            self._add_issue("incorrect_distance", message, level="error")
+            raise IncorrectDistance(message)
 
         if len(events) == 0:
-            raise IncorrectDistance(', '.join((self.athlete.gender,
-                                               self.stroke,
-                                               str(self.row.distance))))
+            message = f"No distances found by parameters {self.athlete.gender}, {self.stroke}, {self.row.distance}"
+            self._add_issue("incorrect_distance", message, level="error")
+            raise IncorrectDistance(message)
 
         for (min, max), e in events:
             if check_age(get_age(self.athlete), min, max):
                 return e, None
 
         if not self.config.get('exh', True):
-            raise IncorrectAge(
-                'The EXH is disabled and the age is not appropriate')
+            message = 'The EXH is disabled and the age is not appropriate'
+            self._add_issue("age_exh", message, level="error")
+            raise IncorrectAge(message)
 
         event = events[0]
         if len(events) > 1:
@@ -153,6 +180,11 @@ class RowParser:
 
         logger.warning(
             f'[{self.i}]: {self.athlete.firstname} {self.athlete.lastname} {get_age(self.athlete)}, участвует в забеге со статусом EXH, потому что он не подходит для возраста ({event[0][0]}-{event[0][1]})')
+        self._add_issue(
+            "age_exh",
+            f"{self.athlete.firstname} {self.athlete.lastname} {get_age(self.athlete)}: статус EXH (возраст {event[0][0]}-{event[0][1]})",
+            extra={"age": get_age(self.athlete), "allowed": f"{event[0][0]}-{event[0][1]}"},
+        )
         return event[1], EntryStatus.EXH
 
     def validate_entrytime(self):
@@ -172,4 +204,9 @@ class RowParser:
             return self.row.entrytime
         logger.warning(
             f'[{self.i}]: Нарушение политики очков ({point:.5f};{self.row.entrytime})')
+        self._add_issue(
+            "points_policy",
+            f'Нарушение политики очков ({point:.5f};{self.row.entrytime})',
+            extra={"points": round(point, 5), "entrytime": str(self.row.entrytime)},
+        )
         return time()

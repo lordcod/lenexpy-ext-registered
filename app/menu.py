@@ -10,6 +10,7 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
+    QDialog,
     QDoubleSpinBox,
     QFileDialog,
     QFrame,
@@ -20,14 +21,17 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QListWidget,
     QScrollArea,
     QTabWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 from lenexpy import tofile
 
 from reg.main import TranslatorLenex
+from reg.issues import IssueCollector
 
 
 def _muted_label(text: str) -> QLabel:
@@ -35,6 +39,71 @@ def _muted_label(text: str) -> QLabel:
     label.setWordWrap(True)
     label.setProperty("role", "muted")
     return label
+
+
+class IssuesDialog(QDialog):
+    CATEGORY_LABELS = {
+        "points_policy": "Политика очков",
+        "incorrect_distance": "Дистанции",
+        "age_exh": "Возраст/EXH",
+        "duplicate_entry": "Дубликаты",
+        "parse_error": "Ошибки строк",
+    }
+
+    def __init__(self, collector: IssueCollector, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("Отчет об обработке")
+        self.resize(720, 480)
+
+        layout = QVBoxLayout(self)
+        grouped = collector.by_category()
+        if not grouped:
+            layout.addWidget(QLabel("Замечаний нет."))
+        else:
+            tabs = QTabWidget()
+            for cat, items in grouped.items():
+                tab = QWidget()
+                tab_layout = QVBoxLayout(tab)
+                list_widget = QListWidget()
+                detail = QTextEdit()
+                detail.setReadOnly(True)
+                detail.setFont(QFont("Consolas", 10))
+                list_widget.setFont(QFont("Segoe UI", 10))
+
+                for issue in items:
+                    prefix = f"Строка {issue['row_index']}: " if issue["row_index"] else ""
+                    list_widget.addItem(prefix + issue["message"])
+
+                def on_select(index: int, issues=items, detail_widget=detail):
+                    if index < 0 or index >= len(issues):
+                        detail_widget.clear()
+                        return
+                    issue = issues[index]
+                    parts = []
+                    if issue.get("row_data"):
+                        parts.append("Данные строки:")
+                        for key, value in issue["row_data"].items():
+                            parts.append(f"  - {key}: {value}")
+                    elif issue.get("row_repr"):
+                        parts.append(f"Row: {issue['row_repr']}")
+                    if issue.get("extra"):
+                        for k, v in issue["extra"].items():
+                            parts.append(f"{k}: {v}")
+                    detail_widget.setPlainText("\n".join(parts))
+
+                list_widget.currentRowChanged.connect(on_select)
+                if items:
+                    list_widget.setCurrentRow(0)
+
+                tab_layout.addWidget(list_widget)
+                tab_layout.addWidget(detail)
+                tabs.addTab(tab, self.CATEGORY_LABELS.get(cat, cat))
+
+            layout.addWidget(tabs)
+
+        btn_close = QPushButton("Закрыть")
+        btn_close.clicked.connect(self.accept)
+        layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
 
 
 class ProcessTab(QWidget):
@@ -514,6 +583,7 @@ class App(QMainWindow):
         super().__init__()
         self.data = data
         self.worker: threading.Thread | None = None
+        self.issue_collector: IssueCollector | None = None
 
         self.setWindowTitle("Lenex Converter")
         self.resize(880, 760)
@@ -639,6 +709,7 @@ class App(QMainWindow):
     def handle_start(self):
         if self.worker is not None:
             return
+        self.issue_collector = IssueCollector()
         self.process_tab.set_busy(True)
         self.primary_start_button.setEnabled(False)
         self.worker = threading.Thread(
@@ -648,7 +719,7 @@ class App(QMainWindow):
     def _run_translation(self):
         try:
             translator = TranslatorLenex(
-                self.data["lxf"], self.data["xlsx"], self.data)
+                self.data["lxf"], self.data["xlsx"], self.data, collector=self.issue_collector)
             lenex = translator.parse()
             self.data["lenex"] = lenex
         except Exception as exc:  # noqa: BLE001
@@ -672,6 +743,8 @@ class App(QMainWindow):
         self.primary_start_button.setEnabled(True)
         self.files_tab.set_save_enabled(True)
         QMessageBox.information(self, "Готово", "Обработка завершена.")
+        if self.issue_collector:
+            IssuesDialog(self.issue_collector, self).exec()
 
     @pyqtSlot(object)
     def _notify_error(self, exc: object):
@@ -680,6 +753,8 @@ class App(QMainWindow):
         self.primary_start_button.setEnabled(True)
         QMessageBox.critical(
             self, "Ошибка", f"Не удалось обработать: {exc}")
+        if self.issue_collector and self.issue_collector.has_items():
+            IssuesDialog(self.issue_collector, self).exec()
 
 def _apply_theme(app: QApplication):
     app.setStyle("Fusion")

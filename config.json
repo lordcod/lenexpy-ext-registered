@@ -55,6 +55,8 @@
         "|": "I",
         "МС": "мс",
         "КМС": "кмс",
+        "ю": "юн",
+        "юнн": "юн",
         "юношеский": "юн",
         "1": "I",
         "2": "II",
@@ -85,8 +87,8 @@
         "Категория": "start_type"
     },
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/SR50 (2).xlsx",
-    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/День_Брассиста_25012026 (2).lxf",
+    "xlsx": "C:/Users/2008d/Downloads/1.xlsx",
+    "lxf": "C:/Users/2008d/Downloads/1.lxf",
     "debug": false,
     "exh": true
 }

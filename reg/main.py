@@ -5,6 +5,8 @@ import openpyxl
 from reg.athlete_parser import BaseData
 from reg.event_parser import RowParser
 from reg.row_types import Row, RowValidate
+from reg.issues import IssueCollector
+from reg.exceptions import IncorrectAge, IncorrectDistance
 import sys
 from lenexpy.ext.basetime import BaseTime
 
@@ -17,6 +19,7 @@ class TranslatorLenex:
         lxf_file: str,
         xlsx_file: str,
         config: dict,
+        collector: IssueCollector | None = None,
         **kwargs
     ):
         self.__dict__.update(kwargs)
@@ -24,6 +27,7 @@ class TranslatorLenex:
         self.xlsx_file = xlsx_file
         self.config = config
         self.basedata = BaseData(config)
+        self.collector = collector or IssueCollector()
 
     def parse(self) -> Lenex:
         lenex = fromfile(self.lxf_file)
@@ -44,10 +48,22 @@ class TranslatorLenex:
 
             try:
                 row = Row._init_row(sheet, values,  i)
-                RowParser(row, i, lenex, self.config, self.basedata).parse()
+                RowParser(row, i, lenex, self.config,
+                          self.basedata, collector=self.collector).parse()
             except Exception as exc:
                 logger.exception(
                     f"Строка {i} пропущена из-за ошибки: [{type(exc).__name__}] {exc}")
+                # Некоторые ошибки уже сохранены в collector внутри парсера (IncorrectDistance, IncorrectAge)
+                if not isinstance(exc, (IncorrectDistance, IncorrectAge)):
+                    category = "parse_error"
+                    self.collector.add(
+                        category=category,
+                        message=f"[{type(exc).__name__}] {exc}",
+                        level="error",
+                        row_index=i,
+                        row_repr=repr(row) if 'row' in locals() else None,
+                        row_data=row._serialize_row() if 'row' in locals() and hasattr(row, '_serialize_row') else None,
+                    )
 
         lenex.meet.clubs = list(self.basedata.clubs.values())
 
@@ -68,6 +84,11 @@ class TranslatorLenex:
                 if ent.eventid in events:
                     logger.warning(
                         f'Дублированные записи: {athl.firstname} {athl.lastname}')
+                    self.collector.add(
+                        category="duplicate_entry",
+                        message=f"Дублированные записи: {athl.firstname} {athl.lastname}",
+                        row_repr=f"{athl.firstname} {athl.lastname}",
+                    )
                 events.append(ent.eventid)
 
         return lenex
