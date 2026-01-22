@@ -41,7 +41,7 @@
         "stroke": 9,
         "distance": 10,
         "entrytime": 12,
-        "start_type": -1,
+        "start_type": 13,
         "lane": -1,
         "heat": -1
     },
@@ -81,11 +81,12 @@
         "Дата рождения": "birthday",
         "Город": "club",
         "Заплыв": "heat",
-        "Дорожка": "lane"
+        "Дорожка": "lane",
+        "Категория": "start_type"
     },
     "birthday": "%d.%m.%Y",
-    "xlsx": "C:/Users/2008d/OneDrive/Документы/Соревнования/170126 Мытищи/Member Export 17_55_16 14.01.2026.xlsx",
-    "lxf": "C:/Users/2008d/OneDrive/Документы/Соревнования/170126 Мытищи/20260117.lxf",
+    "xlsx": "C:/Users/2008d/Downloads/Telegram Desktop/SR50 (2).xlsx",
+    "lxf": "C:/Users/2008d/Downloads/Telegram Desktop/День_Брассиста_25012026 (2).lxf",
     "debug": false,
     "exh": true
 }

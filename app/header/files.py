@@ -73,7 +73,6 @@ class FilesTab:
 
         self.button_saved = ctk.CTkButton(tab,
                                           text="Сохрнаить LXF, LEF",
-                                          state='disabled',
                                           command=self.save_lxf)
         self.button_saved.grid(row=1, column=2, padx=20)
 

@@ -6,6 +6,7 @@ from reg.athlete_parser import BaseData
 from reg.event_parser import RowParser
 from reg.row_types import Row, RowValidate
 import sys
+from lenexpy.ext.basetime import BaseTime
 
 sys.tracebacklimit = 2
 

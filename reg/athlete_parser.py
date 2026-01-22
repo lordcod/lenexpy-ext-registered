@@ -2,6 +2,7 @@ from datetime import date, datetime
 import random
 import re
 from typing import TypeVar
+from loguru import logger
 from lenexpy.models.athelete import Athlete
 from lenexpy.models.club import Club
 from lenexpy.models.handicap import Handicap, HandicapClass
@@ -66,11 +67,17 @@ class AthleteParser:
         if license in config['licenses']:
             return license
 
-    def get_handicap(hand_type: str):
+    def get_handicap(hand_type: str) -> HandicapClass | None:
         if not hand_type:
             return None
         hand_type = hand_type.lower()
-        return handicaps.get(hand_type, hand_type.strip('sS'))
+        raw_handicap = handicaps.get(hand_type, hand_type.strip('sS'))
+        try:
+            return HandicapClass(raw_handicap)
+        except Exception:
+            logger.warning(
+                f'[Handicap] Некорректное значение "{hand_type}" пропущено')
+            return None
 
 
 class BaseData:
@@ -91,8 +98,15 @@ class BaseData:
 
         if key not in self.athletes:
             hand = AthleteParser.get_handicap(row.start_type)
+            handicap = (
+                Handicap(
+                    breast=hand,
+                    free=hand,
+                    medley=hand
+                ) if hand else None
+            )
             athlete = Athlete(
-                randid(),
+                athleteid=randid(),
                 birthdate=AthleteParser.parse_bd(
                     self.config['birthday'], row.birthday),
                 gender=AthleteParser.parse_gender(row.gender),
@@ -100,11 +114,7 @@ class BaseData:
                 lastname=row.lastname,
                 nameprefix=row.middlename,
                 license=AthleteParser.get_license(self.config, row.license),
-                handicap=Handicap(
-                    breast=hand,
-                    free=hand,
-                    medley=hand
-                )
+                handicap=handicap
             )
             club.athletes.append(athlete)
             self.athletes[key] = athlete
@@ -117,7 +127,7 @@ class BaseData:
         key = self._get_key(row.club)
 
         if key not in self.clubs:
-            club = Club(row.club, athletes=[])
+            club = Club(name=row.club, athletes=[])
             self.clubs[key] = club
         else:
             club = self.clubs[key]

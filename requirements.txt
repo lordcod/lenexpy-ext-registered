@@ -1,5 +1,5 @@
-lenexpy
+lenexpy==3.0.1
 lenexpy-ext-basetime @ git+https://github.com/lordcod/lenexpy-ext-basetime
-customtkinter
 loguru
 openpyxl
+PyQt6
